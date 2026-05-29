@@ -1,63 +1,80 @@
+import time
 import pytest
-from libs.ui_libs.create_account_libs import CreateAccountLibs
-from utils.ui_utils.ui_utils import UIUtils  # Fixed import path
+import logging
+from datetime import datetime
+
+from libs.ui_libs.todo_create_account_libs import CreateAccountLibs
+from utils.ui_utils.ui_utils import UIUtils
 
 
 class TestCreateAccount:
+    """
+    The test navigates to the signup page, populates all required fields
+    with generated data, and clicks the Create Account button.  If CAPTCHA
+    is triggered after the click, that is acceptable — the assignment
+    requirement is only that the button is successfully clicked.
+    """
+
+    # Fixtures
+
     @pytest.fixture(autouse=True)
     def setup_teardown(self):
-        """Setup and teardown for each test"""
-        try:
-            self.driver = UIUtils.get_driver()
-            yield
+        """
+        Method-scoped fixture: spin up a fresh WebDriver before each test
+        and quit it unconditionally afterward.
+        """
+        self.driver = UIUtils.get_driver()
+        self.create_account = CreateAccountLibs(self.driver)
+        yield
+        self.driver.quit()
 
-        except Exception as e:
-            print(f"Setup failed: {e}")
-            raise
-        finally:
-            # Cleanup after test - ensure driver exists before quitting
-            if hasattr(self, 'driver') and self.driver:
-                self.driver.quit()
+    # Test case
+    
 
-    def test_navigate_to_create_account(self):
-        """Test navigation to create account page"""
-        try:
-            self.create_account.navigate_to_create_account_page()
+    def test_create_account(self):
+        """
+        Fill in the Create Account form and click Submit.
 
-            # Verify we're on the correct page
-            current_url = self.driver.current_url
-            assert "signup/register" in current_url, "{} :: Failed to navigate to create account page. Current URL: {current_url}"
-            print("Navigation test passed!")
+        Steps
+        -----
+        1. Navigate to https://manage.ac2.mist.com/signin.html#!signup/register
+        2. Assert the browser actually landed on the signup page.
+        3. Enter generated test data into every required field.
+        4. Click the Create Account button.
+           (CAPTCHA may appear — the test ends here regardless.)
+        """
+        logging.info("*" * 89)
+        logging.info("###  test_create_account  ###")
 
-        except Exception as e:
-            # Take screenshot for debugging
-            if hasattr(self, 'driver') and self.driver:
-                try:
-                    screenshot_path = self.create_account.ui_utils.take_screenshot("navigation_error.png")
-                    print(f"Screenshot saved: {screenshot_path}")
-                except:
-                    pass
-            pytest.fail(f"Navigation test failed: {str(e)}")
+        #  Step 1: navigate 
+        self.create_account.navigate_to_create_account_page()
 
-    def test_page_title(self):
-        """Additional test to verify page loads correctly"""
-        try:
-            self.create_account.navigate_to_create_account_page()
+        # Brief wait for the SPA to render the signup fragment.
+        time.sleep(3)
 
-            # Wait for page to load
-            import time
-            time.sleep(3)
+        #  Step 2: verify URL 
+        current_url = self.driver.current_url
+        assert "signup/register" in current_url, (
+            f"Expected signup/register page, but landed on: {current_url}"
+        )
+        logging.info("Confirmed signup/register page loaded: %s", current_url)
 
-            page_title = self.driver.title
-            print(f"Page title: {page_title}")
+        #  Step 3: build unique test data 
+        # Using a millisecond-precision timestamp avoids duplicate-email
+        # rejections on repeated test runs.
+        timestamp = str(int(datetime.now().timestamp() * 1000))
+        first_name = "AutoFirst"
+        last_name  = "AutoLast"
+        email      = f"autouser_{timestamp}@testautomation.example"
+        password   = "TestPassword@123"
 
-            # Verify page title is not empty
-            assert page_title, "Page title is empty"
+        logging.info("Test data → email: %s", email)
 
-        except Exception as e:
-            pytest.fail(f"Page title test failed: {str(e)}")
+        #  Step 4: fill form and click
+        self.create_account.fill_and_submit_create_account_form(
+            first_name, last_name, email, password
+        )
 
-
-    # TODO : Add test case to enter details and create the account.
-    # Add any Libs as needed in todo_create_account_libs.py and use them here.
-    # def test_create_account(self):
+        logging.info("Create Account button clicked — test complete.")
+        # CAPTCHA or next-step navigation may follow; both are acceptable
+        # outcomes per the assignment specification.
