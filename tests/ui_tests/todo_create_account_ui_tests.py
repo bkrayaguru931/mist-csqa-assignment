@@ -6,7 +6,6 @@ from datetime import datetime
 from libs.ui_libs.todo_create_account_libs import CreateAccountLibs
 from utils.ui_utils.ui_utils import UIUtils
 
-
 class TestCreateAccount:
     """
     The test navigates to the signup page, populates all required fields
@@ -49,8 +48,8 @@ class TestCreateAccount:
         #  Step 1: navigate 
         self.create_account.navigate_to_create_account_page()
 
-        # Brief wait for the SPA to render the signup fragment.
-        time.sleep(3)
+        # Brief wait to render the signup fragment.
+        self.create_account.wait_for_page_load()
 
         #  Step 2: verify URL 
         current_url = self.driver.current_url

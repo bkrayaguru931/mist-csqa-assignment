@@ -20,4 +20,3 @@ CONST_API_SELF = "/self"
 ######## SITE CONSTANTS #########
 CONST_API_ORG_SITES = "/orgs/{}/sites"
 CONST_API_SITE_DETAILS = "/sites/{}"
-

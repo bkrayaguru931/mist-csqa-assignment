@@ -1,3 +1,4 @@
+# utils\ui_utils\ui_utils.py
 """UI utility functions for Selenium operations."""
 
 import os

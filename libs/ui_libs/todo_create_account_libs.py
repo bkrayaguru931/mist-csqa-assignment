@@ -11,7 +11,6 @@ class CreateAccountLibs:
 
     # Locators
     _URL = "https://manage.ac2.mist.com/signin.html#!signup/register"
-
     _FIRST_NAME      = (By.NAME, "firstName")
     _LAST_NAME       = (By.NAME, "lastName")
     _EMAIL           = (By.NAME, "email")
@@ -25,7 +24,6 @@ class CreateAccountLibs:
     _SUBMIT_BTN      = (By.CSS_SELECTOR, "button.signup-form-btn")
 
     # Constructor
-
     def __init__(self, driver: webdriver.Chrome):
         self.driver = driver
         self.ui_utils = UIUtils(driver)
@@ -35,7 +33,7 @@ class CreateAccountLibs:
     def navigate_to_create_account_page(self):
         """Open the Create Account page in the current browser session."""
         self.ui_utils.navigate_to(self._URL)
-
+    
     def enter_first_name(self, first_name: str):
         """Type *first_name* into the First Name field."""
         self.ui_utils.send_keys(*self._FIRST_NAME, first_name)
@@ -107,3 +105,10 @@ class CreateAccountLibs:
         self.enter_zip_code(zip_code)
         self.accept_terms()
         self.click_create_account()
+
+    # Helper methods
+    def wait_for_page_load(self):
+        """
+        Wait until the Create Account page is fully loaded.
+        """
+        self.ui_utils.find_element(*self._FIRST_NAME)
